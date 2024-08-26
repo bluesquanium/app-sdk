@@ -48,7 +48,7 @@ class DataSender(private val context: Context) {
                 if (!file.exists()) {
                     FileOutputStream(file, true).use {
                         output ->
-                            output.write("PPG_GREEN\nppg|timestamp\n0|1234567789123456\n77|-1234567890123456".toByteArray())
+                            output.write("WEAR_PPG_GREEN\nppg|timestamp\n0|1234567789123456\n77|-1234567890123456".toByteArray())
 //                        output.write(PrivDataType.fromModel(PpgGreen::class).name.toByteArray() + "\n".toByteArray())
 //                        output.write(PpgGreen::class.memberProperties.joinToString("|") { it.name }.toByteArray() + "\n".toByteArray())
                     }

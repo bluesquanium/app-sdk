@@ -7,41 +7,18 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.BeanProperty
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JavaType
-import com.fasterxml.jackson.databind.JsonDeserializer
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.deser.ContextualDeserializer
-import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.dataformat.csv.CsvMapper
 import com.fasterxml.jackson.dataformat.csv.CsvParser
 import com.fasterxml.jackson.dataformat.csv.CsvSchema
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import healthstack.app.data.repository.WearableDataReceiverRepositoryImpl
 import healthstack.backend.integration.BackendFacade
 import healthstack.backend.integration.BackendFacadeHolder
 import healthstack.common.HEALTH_DATA_FOLDER_NAME
-import healthstack.common.model.Accelerometer
-import healthstack.common.model.EcgSet
-import healthstack.common.model.HeartRate
-import healthstack.common.model.PpgGreen
 import healthstack.common.model.PrivDataType
-import healthstack.common.model.Timestamp
-import healthstack.common.room.dao.PrivDao
 import healthstack.healthdata.link.HealthData
-import org.apache.commons.io.input.ReaderInputStream
-import java.io.BufferedReader
 import java.io.File
-import java.io.FileInputStream
-import java.io.IOException
 import java.io.InputStream
-import java.io.InputStreamReader
 import java.util.concurrent.TimeUnit
 
 @HiltWorker
@@ -68,45 +45,30 @@ class UploadHealthDataFileWorker @AssistedInject constructor(
     private suspend fun syncFile(file: File): kotlin.Result<Unit> = runCatching {
         Log.i(TAG, "Try to sync ${file.name} file to the server")
 
-        FileInputStream(file).use { inputStream ->
-            Log.i("syncFile", "start to read file")
-            //Log.i("syncFile", "${file.readLines()}")
-            val fileStr = file.readLines()
-            // val dataType = PrivDataType.valueOf(fileStr.first())\
-            val dataType = PrivDataType.WEAR_PPG_GREEN
-            Log.i("syncFile", "dataType: $dataType")
-            // saveWearableData(dataType, ReaderInputStream(reader))
-            val contents = fileStr.joinToString(separator = "\n")
-            Log.i("syncFile", "content: $contents")
-            saveWearableData(dataType, contents)
-        }
+        Log.i("syncFile", "start to read file")
+        val contents = file.readLines()
+        val dataType = PrivDataType.valueOf(contents.first())
+        Log.i("syncFile", "dataType: $dataType")
+        syncFileContents(dataType, contents.drop(1))
 
         // upload
         Log.i("syncFile", "upload File: ${file.name}")
     }
 
-    suspend fun saveWearableData(dataType: PrivDataType, fileStr: String) {
+    private suspend fun syncFileContents(dataType: PrivDataType, contents: List<String>) {
         Log.i(TAG, "try to saveWearableData: $dataType")
-        syncData(dataType, readCsv(fileStr))
+        syncData(dataType, readFileContents(contents))
     }
 
-    fun readCsv(fileStr: String): List<Map<String, Any>> {
-        val csvMapper = CsvMapper().apply {
-            enable(CsvParser.Feature.TRIM_SPACES)
-            enable(CsvParser.Feature.SKIP_EMPTY_LINES)
+    private fun readFileContents(contents: List<String>): List<Map<String, Any>> {
+        val schema = contents.first().split('|')
+
+        return contents.drop(1).map {
+            schema.zip(it.split('|')).toMap()
         }
-
-        val schema = CsvSchema.emptySchema().withHeader().withColumnSeparator('|')
-
-        val data = csvMapper.readerFor(Map::class.java)
-            .with(schema)
-            .readValues<Map<String, String>>(fileStr)
-            .readAll()
-
-        return data
     }
 
-    suspend fun saveWearableData(dataType: PrivDataType, csvInputStream: InputStream) {
+    suspend fun syncFileContents(dataType: PrivDataType, csvInputStream: InputStream) {
         Log.i(TAG, "try to saveWearableData: $dataType")
         syncData(dataType, readCsv(csvInputStream))
     }
