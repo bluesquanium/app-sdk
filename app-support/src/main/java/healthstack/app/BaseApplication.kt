@@ -20,6 +20,7 @@ import healthstack.app.sync.FileSyncManager
 import healthstack.app.sync.SyncManager
 import healthstack.app.task.repository.TaskRepository
 import healthstack.app.task.repository.TaskRepositoryImpl
+import healthstack.app.worker.setUploadDataWorker
 import healthstack.kit.info.MyProfileView
 import healthstack.kit.info.SettingsView
 import healthstack.kit.info.StudyInfoView
@@ -30,6 +31,7 @@ import healthstack.kit.task.signup.SignUpTask
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.util.concurrent.TimeUnit
 
 /**
  * Composable function representing the entire application.
@@ -94,6 +96,8 @@ private fun Main(
         }
     }
 
+    val ctx = LocalContext.current
+
     NavHost(navController = navController, startDestination = initialAppStage.name) {
         composable(Home.name) {
             Home(statusList, viewModel, changeNavigation)
@@ -107,7 +111,10 @@ private fun Main(
         composable(Settings.name) {
             SettingsView(
                 onClickBack = { changeNavigation(Home) },
-                initialize = { changeNavigation(Onboarding) }
+                initialize = { changeNavigation(Onboarding) },
+                refresh = {
+                    setUploadDataWorker(ctx, 1, TimeUnit.MINUTES)
+                }
             ).Render()
         }
         composable(Education.name) {

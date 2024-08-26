@@ -14,7 +14,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import healthstack.common.MeasureState
 import healthstack.common.model.PrivDataType
-import healthstack.common.model.PrivDataType.ECG
+import healthstack.common.model.PrivDataType.WEAR_ECG
 import healthstack.wearable.kit.screen.EcgMainScreen
 import healthstack.wearable.kit.screen.EcgMeasureScreen
 import healthstack.wearable.kit.screen.HomeScreen
@@ -27,6 +27,7 @@ fun Router(
     healthDataList: List<PrivDataType>,
     ecgMainViewModel: EcgMainViewModel = hiltViewModel(),
     ecgMeasureViewModel: EcgMeasureViewModel = hiltViewModel(),
+    oneTimeWork: () -> Unit,
 ) {
     val startDest = Route.Home.name
     val navController = rememberNavController()
@@ -44,7 +45,7 @@ fun Router(
         mutableStateOf(0)
     }
     var measurementType by remember {
-        mutableStateOf(PrivDataType.ECG)
+        mutableStateOf(PrivDataType.WEAR_ECG)
     }
 
     ecgMainViewModel.lastMeasurementTime.observeAsState().value?.let {
@@ -71,7 +72,7 @@ fun Router(
         startDestination = startDest,
     ) {
         composable(Route.Home.name) {
-            homeScreen.Render {
+            homeScreen.Render(oneTimeWork) {
                 type ->
                 measurementType = type
                 navController.navigate(Route.Main.name)
@@ -79,12 +80,13 @@ fun Router(
         }
         composable(Route.Main.name) {
             when (measurementType) {
-                ECG -> ecgMainScreen.Render { navController.navigate(Route.Measure.name) }
+                WEAR_ECG -> ecgMainScreen.Render { navController.navigate(Route.Measure.name) }
+                else -> throw Exception("No active data type: $measurementType")
             }
         }
         composable(Route.Measure.name) {
             when (measurementType) {
-                ECG -> ecgMeasureScreen.Render(
+                WEAR_ECG -> ecgMeasureScreen.Render(
                     onInitial = {
                         ecgMeasureViewModel.startTrackingEcg()
                     },
@@ -99,6 +101,7 @@ fun Router(
                         ecgMeasureViewModel.stopTracking()
                     },
                 )
+                else -> throw Exception("No active data type: $measurementType")
             }
         }
     }

@@ -22,7 +22,7 @@ import healthstack.wearable.kit.theme.TextColor
 
 class HomeScreen(private val lastMeasureTime: String, private val healthDataList: List<PrivDataType>) {
     @Composable
-    fun Render(onClick: (PrivDataType) -> Unit) {
+    fun Render(oneTimeWork: () -> Unit, onClick: (PrivDataType) -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -45,9 +45,16 @@ class HomeScreen(private val lastMeasureTime: String, private val healthDataList
                 fontSize = 16.sp,
             )
             healthDataList.forEach {
-                MeasurementButton(it, lastMeasureTime, onClick)
-                Spacer(modifier = Modifier.height(8.dp))
+                if(!it.isPassive) {
+                    MeasurementButton(it, lastMeasureTime, onClick)
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
             }
+
+            MeasurementButton(PrivDataType.WEAR_ECG, lastMeasureTime) { it ->
+                oneTimeWork()
+            }
+
             Spacer(modifier = Modifier.height(45.dp))
         }
     }

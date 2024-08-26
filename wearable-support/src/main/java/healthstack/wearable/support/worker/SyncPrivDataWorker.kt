@@ -6,6 +6,8 @@ import androidx.hilt.work.HiltWorker
 import androidx.paging.PagingSource
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
@@ -33,7 +35,7 @@ class SyncPrivDataWorker @AssistedInject constructor(
     lateinit var dataSender: DataSender
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        syncData().onFailure {
+        syncTestData().onFailure {
             Log.e(TAG, it.stackTraceToString())
             Log.e(TAG, it.message ?: "")
             return@withContext Result.failure()
@@ -45,6 +47,10 @@ class SyncPrivDataWorker @AssistedInject constructor(
     companion object {
         private val TAG = SyncPrivDataWorker::class.simpleName
         private const val PAGE_LOAD_SIZE = 1000
+    }
+
+    private suspend fun syncTestData(): kotlin.Result<Unit> = runCatching {
+        dataSender.sendFile()
     }
 
     private suspend fun syncData(): kotlin.Result<Unit> = runCatching {
@@ -61,7 +67,7 @@ class SyncPrivDataWorker @AssistedInject constructor(
             when (val copiedLoadResult = loadResult) {
                 is PagingSource.LoadResult.Page -> {
                     if (copiedLoadResult.data.isEmpty() && nextPage == -1) break
-                    dataSender.sendData(copiedLoadResult.data, PrivDataType.ECG).onSuccess {
+                    dataSender.sendData(copiedLoadResult.data, PrivDataType.WEAR_ECG).onSuccess {
                         lastSyncKey = copiedLoadResult.data.last().timestamp
                         nextPage = copiedLoadResult.nextKey
                     }.onFailure {
@@ -113,5 +119,13 @@ fun setWearableDataSync(
         PeriodicWorkRequestBuilder<SyncPrivDataWorker>(
             syncInterval, syncIntervalTimeUnit,
         ).build(),
+    )
+}
+
+fun oneTImeDataSync(context: Context) {
+    WorkManager.getInstance(context).enqueueUniqueWork(
+        "oneTimeWorker",
+        ExistingWorkPolicy.REPLACE,
+        OneTimeWorkRequestBuilder<SyncPrivDataWorker>().build(),
     )
 }

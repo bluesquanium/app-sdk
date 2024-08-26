@@ -23,7 +23,7 @@ enum class Route {
 }
 
 @Composable
-fun BaseActivity(activity: Activity, healthDataList: List<PrivDataType>) {
+fun BaseActivity(activity: Activity, healthDataList: List<PrivDataType>, oneTimeWork: () -> Unit) {
     HealthWearableTheme {
         var isHealthTrackerConnected by remember { mutableStateOf(PrivDataRequester.isConnected) }
         var isPermissionCheckerLaunched by remember { mutableStateOf(false) }
@@ -35,7 +35,7 @@ fun BaseActivity(activity: Activity, healthDataList: List<PrivDataType>) {
             PrivDataRequester.healthTrackingService.connectService()
             PermissionChecker { isPermissionCheckerLaunched = true }
         } else {
-            Router(healthDataList)
+            Router(healthDataList, oneTimeWork = oneTimeWork)
         }
     }
 }

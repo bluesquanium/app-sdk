@@ -67,7 +67,7 @@ class EcgMeasureViewModel @Inject constructor(
                             trackMeasureTimePref.add(sessionId)
                         }
                         ecgSets.forEach { it.sessionId = sessionId }
-                        dataSender.sendData(ecgSets, PrivDataType.ECG).onFailure {
+                        dataSender.sendData(ecgSets, PrivDataType.WEAR_ECG).onFailure {
                             ecgDao.insertAll(ecgSets)
                         }
                     }

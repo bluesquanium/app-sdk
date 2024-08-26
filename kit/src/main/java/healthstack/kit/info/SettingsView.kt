@@ -1,6 +1,7 @@
 package healthstack.kit.info
 
 import android.app.TimePickerDialog
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,7 @@ import healthstack.kit.datastore.PreferenceDataStore
 import healthstack.kit.notification.AlarmUtils
 import healthstack.kit.theme.AppTheme
 import healthstack.kit.ui.AlertPopup
+import healthstack.kit.ui.RoundButton
 import healthstack.kit.ui.ToggleSwitch
 import healthstack.kit.ui.TopBar
 import kotlinx.coroutines.flow.first
@@ -43,6 +45,7 @@ import kotlinx.coroutines.launch
 class SettingsView(
     val onClickBack: () -> Unit = {},
     val initialize: () -> Unit = {},
+    val refresh: () -> Unit = {},
 ) {
     @Composable
     fun Render() {
@@ -151,6 +154,11 @@ class SettingsView(
                 }
                 Spacer(Modifier.height(46.dp))
                 ReminderSwitch(initialState = notificationStatus.value, changeState = changeStatus)
+                Spacer(Modifier.height(65.dp))
+                RoundButton("Sync Health Data") {
+                    Log.d("test", "click the Sync Health Data button")
+                    refresh()
+                }
                 Spacer(Modifier.height(65.dp))
                 AlertPopup(
                     "Logout",

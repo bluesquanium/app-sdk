@@ -15,6 +15,14 @@ import retrofit2.http.Query
 import java.time.LocalDateTime
 
 interface HealthStackBackendAPI {
+    @POST("/health-data")
+    suspend fun syncHealthData(
+        @Header("jwt-issuer") jwtIssuer: String,
+        @Header("Authorization") bearerToken: String,
+        @Query("studyIds") studyIds: List<String>,
+        @Body healthData: HealthData,
+    )
+
     @POST("/api/projects/{projectId}/health-data")
     suspend fun sync(
         @Header("id-token") idToken: String,
