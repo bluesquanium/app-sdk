@@ -88,7 +88,7 @@ fun setUploadDataWorker(
     syncIntervalTimeUnit: TimeUnit,
 ) {
     WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-        SyncWearDataWorker::class.java.simpleName,
+        "one-time-synewear",
         ExistingPeriodicWorkPolicy.REPLACE,
         PeriodicWorkRequestBuilder<SyncWearDataWorker>(
             syncInterval, syncIntervalTimeUnit,
