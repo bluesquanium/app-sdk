@@ -15,7 +15,6 @@ abstract class WearableReceiver : WearableListenerService() {
     override fun onChannelOpened(channel: ChannelClient.Channel) {
         super.onChannelOpened(channel)
         Log.i(TAG, "channel opened ${channel.path}")
-        Log.d(TAG, "channel opened ${channel.path}")
 
         val channelClient = Wearable.getChannelClient(baseContext)
         if (channel.path.contains(".csv")) {
@@ -35,13 +34,14 @@ abstract class WearableReceiver : WearableListenerService() {
                         Log.e(TAG, "wear->mobile ${channel.path} fail code: $closeReason")
                         newFile.delete()
                     } else {
-                        Log.d(TAG, "wear->mobile ${channel.path} success")
+                        Log.i(TAG, "wear->mobile ${channel.path} success")
                     }
 
                     channelClient.close(channel)
                     channelClient.unregisterChannelCallback(this)
                 }
             }
+
             kotlin.runCatching {
                 Tasks.await(channelClient.registerChannelCallback(channel, channelCallback))
                 Tasks.await(channelClient.receiveFile(channel, Uri.fromFile(newFile), false))

@@ -1,4 +1,4 @@
-package healthstack.app.worker
+package healthstack.app.sync
 
 import android.content.Context
 import android.net.ConnectivityManager

@@ -18,9 +18,10 @@ import healthstack.app.pref.SettingPreference
 import healthstack.app.status.StatusDataType
 import healthstack.app.sync.FileSyncManager
 import healthstack.app.sync.SyncManager
+import healthstack.app.sync.SyncWearDataManager
 import healthstack.app.task.repository.TaskRepository
 import healthstack.app.task.repository.TaskRepositoryImpl
-import healthstack.app.worker.setUploadDataWorker
+import healthstack.app.sync.setUploadDataWorker
 import healthstack.kit.info.MyProfileView
 import healthstack.kit.info.SettingsView
 import healthstack.kit.info.StudyInfoView
@@ -141,11 +142,13 @@ private fun Main(
         }
         composable(SignUp.name) {
             SyncManager.initialize(LocalContext.current, healthDataSyncSpecs)
+            SyncWearDataManager.initialize(LocalContext.current, 15, TimeUnit.MINUTES)
             FileSyncManager.initialize(LocalContext.current, 15)
 
             singUpTask.callback = {
                 scope.launch {
                     SyncManager.getInstance().startBackgroundSync()
+                    SyncWearDataManager.getInstance().startBackgroundSync()
                     FileSyncManager.getInstance().startBackgroundSync()
                 }
                 changeNavigation(Home)
