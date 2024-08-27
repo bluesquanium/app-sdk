@@ -63,6 +63,7 @@ class SyncWearDataWorker(
 
     suspend fun syncData(dataType: PrivDataType, data: List<Map<String, Any>>) {
         Log.i(TAG, "data synced from wearOS: $dataType, size: ${data.size}")
+        Log.i(TAG, "data: $data")
 
         // TODO: Modify jwt-issuer and bearerToken fields
         healthDataSyncClient.syncHealthData(
