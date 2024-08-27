@@ -85,6 +85,10 @@ dependencies {
     implementation(AppDependencies.GUAVA)
     implementation(AppDependencies.PLAY_SERVICE_WEARABLE)
     kapt(listOf(AppDependencies.ANDROIDX_ROOM_COMPILER))
+    implementation(AppDependencies.APACHE_COMMONS_IO)
+    implementation(AppDependencies.JACKSON_DATAFORMAT_CSV)
+    implementation(AppDependencies.JACKSON_DATATYPE_JSR310)
+    implementation(AppDependencies.JACKSON_MODULE_KOTLIN)
 
     debugImplementation(AppDependencies.uiDebugLibs)
 
